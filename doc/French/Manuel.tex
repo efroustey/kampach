@@ -1,0 +1,174 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{url}
+
+\begin{document}
+ 
+\paragraph{}
+Kampach\textit{, c'est, en langue maya yucatèque, la douleur aux lombaires, le lumbago. On lit souvent que le coût énergétique de l'architecture monumentale maya était moindre que ce que l'on peut imaginer de manière intuitive, et c'est l'une des conclusions de ce travail. Il est souhaitable d'écarter fermement les estimations fantaisistes qui peuvent circuler sur la construction monumentale, mais il ne faut pas, pour autant, oublier que les pierres, le \textit{sascab}, la chaux, les linteaux, l'argile, étaient transportés à dos d'homme. La construction monumentale des Mayas ne se limite pas à des lignes de calculs. Ce fut aussi de la sueur, de la poussière et du sang.}
+
+\paragraph{}
+\textit{Voici le mode d'emploi de l'application. Rappelons qu'elle a été pensée pour fluidifier le calcul de coût de main-d'œuvre dans le contexte de l'architecture du Classique ancien dans les Basses Terres centrales. C'est pour ce genre de construction que l'automatisation des calculs est la plus adaptée et performante. Mais cet outil a aussi vocation à être utilisé pour d'autres sites antiques, y compris hors du contexte maya.}
+
+\section{Principe}
+\textit{Kampach} définit un ensemble d'objets qui permettent de modéliser un site archéologique, afin de calculer le coût de main d'œuvre nécessaire à sa construction. Il y a deux catégories d'objets : ceux qui possèdent un coût (les bâtiments et les activités), et ceux, plus abstraits, qui permettent de faire le lien entre ces derniers (les formes géométriques et les \textit{input}). Voici plus précisément la liste de ces objets :
+
+\begin{itemize}
+\item Les bâtiments. Un bâtiment possède une forme, et de manière optionnelle des structures sub. Son coût est celui de la construction du volume de remblai, ainsi que du volume et de la surface de parement. En présence de structures sub, leur volume est retranché au volume de remblai.
+
+\item Les activités, divisées en deux catégories : le transport et la construction. Le coût d'une activité de construction dépend linéairement de la quantité de matière à construire. Celui d'une activité de transport dépend de la distance à parcourir, des vitesses à vide et chargé, et de la quantité transportée par voyage.
+
+Une activité peut avoir d'autres activités en entrée : avant de construire un mur il faut transporter des pierres, et avant cela les tailler.
+
+\item Les formes géométriques, associées aux bâtiments. Les formes disponibles sont les parallélépipèdes, les prismes, les pyramides tronquées et les escaliers.
+
+\item Les objets de type \textit{input}. Ils explicitent la dépendance entre un bâtiment et les différentes activités nécessaires à sa construction, ainsi qu'entre une activité et les sous-activités qui lui sont nécessaires. Ce modèle permet de définir tout type de dépendance entre activités ; à ce jour, le seul type de dépendance implémenté est la dépendance linéaire.
+
+Pour mieux comprendre le rôle de l'objet \textit{input}, imaginons par exemple la construction des murs d'une pyramide. L'objet pyramide va permettre de calculer le volume des murs à construire, en mètres-cube. D'autre part, on connaît le coût de l'activité de construction, en jours-hommes par kilogramme de pierre. L'objet \textit{input} fait le lien entre les deux, en précisant d'une part que l'activité de construction est destinée au volume de parement de la pyramide, et en spécifiant d'autre part la densité de la pierre, en kilogramme par mètre-cube, nécessaire pour calculer la masse de pierre nécessaire à partir du volume des murs de la pyramide.
+\end{itemize}
+
+Une fonctionalité intéressante de \textit{Kampach} est la manipulation de quantités avec des bornes d'incertitude : lorsqu'on ne connaît pas précisément la valeur d'une quantité, on peut l'écrire sous la forme d'une moyenne assortie d'une valeur minimale et maximale. Ces incertitudes sont alors propagées dans les calculs, ce qui permet de connaître à tout moment les valeurs extrémales des quantités estimées.
+
+\section{Installation}
+\textit{Kampach} est une application en cours de développement qui nécessite Python 3. Voici la procédure à suivre pour l'installer:
+\begin{enumerate}
+ \item Télécharger \textit{Kampach}: \url{https://github.com/efroustey/kampach} (lien \textit{Clone or download} puis \textit{Download ZIP}).
+ 
+ \item Télécharger \textit{Pint}\footnote{\textit{Pint} est un module de gestion d'unités physiques. \textit{Kampach} en utilise une version modifiée. La version originale se trouve ici: \url{https://github.com/hgrecco/pint}}: \url{https://github.com/efroustey/pint}.
+ 
+ \item Dézipper les deux fichiers, et déplacer le dossier \texttt{pint-master/pint} dans \texttt{kampach-master/kampach}.
+ 
+ \item Les calculs peuvent être lancés depuis le dossier \texttt{kampach-master/kampach} grâce au fichier \texttt{run.py} (voir ci-dessous).
+\end{enumerate}
+
+\section{Utilisation}
+
+\paragraph{}
+Les données décrivant le site archéologique doivent être écrites dans un fichier au format XML (voir paragraphe suivant), ce qui peut être fait avec tout éditeur de texte (par exemple Notepad++). Ce fichier doit ensuite être placé au même endroit que le fichier \texttt{run.py}. Il suffit ensuite de lancer le fichier \texttt{run.py}, soit par un double-clic si un programme qui exécute du code Python est configuré pour ce type de fichier, sinon en ouvrant une fenêtre de commande, puis après s'être placé dans le répertoire contenant le fichier, exécuter \texttt{python run.py}. Lorsque cela est demandé, il faut alors entrer le nom du fichier XML décrivant le site archéologique, et taper sur Entrée. Le résultat des calculs s'affiche à l'écran.
+
+\subsection{Écriture des quantités}
+Les unités physiques sont gérées par le module \textit{Pint}, et peuvent être écrites sous la forme \texttt{"1 meter"}. Les unités disponibles se trouvent dans le fichier \texttt{pint/default\_en.txt}. Les unités peuvent être multipliées, divisées et élevées à une puissance : \texttt{"1 kilogram / meter ** 2"} signifie un kilogramme par mètre-carré.
+
+Pour spécifier des valeurs minimale et maximale, il faut les ajouter entre crochets, après une virgule, et séparées par un point-virgule : \texttt{"1 meter, [0.9 ; 1.2]"}.
+
+\subsection{Le format XML}
+Un fichier XML est un fichier de texte qui repecte certaines conventions pour décrire des objets. On appelle \textit{balise} ce qui est écrit entre crochets ; par exemple la première balise à écrire pour commencer à décrire un site est \texttt{<Site>}.
+
+Les balises s'ouvrent et se ferment : après \texttt{<Site>}, on écrit tout ce qui est nécessaire pour décrire le site. À la fin, on referme la balise avec \texttt{</Site>}. Si une balise est fermée juste après avoir été ouverte, on peut la simplifier : \texttt{<Cuboid></Cuboid>} peut être écrit \texttt{<Cuboid />}.
+
+Par convention, la première ligne d'un fichier XML doit contenir le texte suivant : \texttt{<?xml version="1.0" ?>}. La seconde ligne doit contenir une balise (du type que l'on souhaite), qui se ferme à la dernière ligne du fichier.
+
+On peut ajouter des \textit{attributs} aux balises : à l'intérieur des crochets, après le nom de la balise, un attribut s'écrit sous la forme \textit{nom=``valeur''}. L'ordre des attributs n'a pas d'importance. Par exemple, pour donner un nom au site sur lequel on travaille, on écrit \texttt{<Site name="Naachtun">}.
+
+\subsection{Balises disponibles}
+\textit{Kampach} met à disposition un certain nombre de balises, qui correspondent aux objets que l'on modélise.
+
+\subsubsection{Objets ayant un coût}
+Les balises des objets ayant un coût sont celles qui représentent les bâtiments : \texttt{<Site>}, \texttt{<SuperBuilding>}, \texttt{<Building>} ; et les activités : \texttt{<ProductionActivity>}, \texttt{<TransportActivity>}. Toutes ces balises doivent avoir un attribut \texttt{name} qui décrit leur nom (nécessaire lors de l'affichage des résultats de calcul). A l'intérieur d'une telle balise (c'est-à-dire entre la balise d'ouverture et celle de fermeture), on peut placer une balise \texttt{<Inputs>}, qui contient une liste de balises de type \textit{Input} (voir plus bas) décrivant les bâtiments ou activités nécessaires à la construction du bâtiment/réalisation de l'activité décrite.
+
+Voici en détail les balises disponibles :
+
+\begin{itemize}
+ \item \texttt{<Site>} décrit un site archéologique. Cette balise n'a besoin d'aucun attribut hormis \texttt{name}. C'est en général la première balise que l'on écrit dans un fichier. À l'intérieur, sous sa balise \texttt{<Inputs>}, on met des \texttt{<Building>} ou \texttt{<SuperBuilding>}.
+ 
+ \item \texttt{<SuperBuilding>} ou ``super bâtiment'' représente un bâtiment composé d'autres bâtiments. Cela sert à visualiser le coût d'un ensemble de bâtiments. Comme \texttt{<Site>}, cette balise n'attend pas d'attribut hormis \texttt{name}.
+ 
+ \item \texttt{<Building>} représente un bâtiment, qui possède une forme géométrique et éventuellement des structures sub dont le volume est retranché au volume de remblai. Pour définir la forme géométrique, on place une balise \texttt{<Shape>} à l'intérieur de \texttt{<Building>}, et une balise de type géométrique à l'intérieur de \texttt{<Shape>}. De même, les structures sub sont définies dans une balise \texttt{<Substructures>}, où l'on place une ou plusieurs balises de type géométrique.
+ 
+ \item \texttt{<ProductionActivity>} représente une activité dont le coût évolue liné\-airement en fonction d'une certaine quantité de matière à traiter : pour une quantité $Q$, le coût $C$ est de la forme $C = aQ+b$. Typiquement, il s'agit des activités de construction ou de transformation de matière. Deux attributs doivent être précisés en plus de \texttt{name} : \texttt{marginal\_cost}, égal au coefficient $a$, et \texttt{fixed\_cost}, égal à $b$. S'il ne sont pas renseignés, par défaut \texttt{marginal\_cost} vaut 1 et \texttt{fixed\_cost} vaut 0.
+ 
+ \item \texttt{<TransportActivity>} représente une activité de transport de matière. Les attributs à spécifier sont la distance à parcourir \texttt{distance}, la quantité transportée par voyage \texttt{amount\_per\_travel}, et les vitesses à vide et chargé \texttt{speed\_empty} et \texttt{speed\_loaded}.
+\end{itemize}
+
+\subsubsection{Objets géométriques}
+Les objets géométriques définissent la forme des bâtiments et permettent de calculer les volumes et surfaces associés. Les côtes à rentrer en attributs sont spécifiques aux types de géométries, à l'exception de l'épaisseur de parement (attribut \texttt{finish\_thickness}), qui est une propriété commune à toutes les formes.
+Les balises disponibles pour décrire les géométries sont :
+
+\begin{itemize}
+ \item \texttt{<Cuboid>}, qui représente un parallélépipède. Hormis \texttt{finish\_thickness}, les attributs à spécifier sont la longueur \texttt{length}, la largeur \texttt{width}, et la hauteur \texttt{height}.
+ 
+ \item \texttt{<Prism>}, qui représente un prisme (par exemple une toiture). Les attributs sont la largeur \texttt{width}, la profondeur \texttt{depth} et la hauteur \texttt{height}.
+ 
+ \item \texttt{<TruncatedPyramid>}, qui représente une pyramide tronquée. Les attributs sont les longueurs et largeurs à la base et au sommet \texttt{bottom\_length}, \texttt{bottom\_width}, \texttt{top\_length}, \texttt{top\_width}, ainsi que la hauteur \texttt{height}.
+ 
+ \item \texttt{<Stairs>}, qui représente des escaliers. Les attributs à renseigner sont la largeur de la première marche \texttt{bottom\_length}, la largeur de la marche palière \texttt{top\_length}, la profondeur de la surface en contact avec le sol \texttt{bottom\_width}, la profondeur de la marche palière \texttt{top\_width}, la hauteur \texttt{height}, et l'emprise au sol \texttt{depth}.
+\end{itemize}
+
+\subsubsection{Objets \textit{Input}}
+Les balises de type \textit{Input} sont placées à l'intérieur d'une balise \texttt{<Inputs>} d'un objet ayant un coût (l'objet parent, un bâtiment ou une activité), et contiennent elle-même une balise d'une activité (l'activité-enfant). Elles servent à permettre, dans les calculs, de déterminer la quantité de matière devant être produite par l'activité enfant afin de satisfaire les besoins de l'activité ou du bâtiment parent.
+La seule balise disponible est \texttt{<LinearInput>}, elle décrit une dépendance linéaire entre le parent et l'enfant. Ses attributs sont :
+\begin{itemize}
+ \item \texttt{target\_amount} : nécessaire lorsque l'objet parent est un bâtiment, cet attribut spécifie le volume ou la surface cible de l'activité enfant. Les valeurs possibles sont :
+ \begin{itemize}
+  \item \texttt{total\_volume} : le volume total,
+  \item \texttt{fill\_volume} : le volume de remblai,
+  \item \texttt{finish\_volume} : le volume de parement,
+  \item \texttt{total\_finish\_area} : l'aire extérieure totale,
+  \item \texttt{top\_finish\_area} : l'aire extérieure horizontale,
+  \item \texttt{walls\_finish\_area} : l'aire extérieure verticale ou inclinée.
+ \end{itemize}
+ On peut aussi entrer directement une valeur numérique, par exemple \texttt{1000 meter ** 3} ou \texttt{1000 meter ** 2}.
+
+ 
+ \item \texttt{marginal\_amount} : la quantité de matière que doit produire l'activité enfant pour une unité de quantité attendue par l'activité ou le bâtiment parent. Il s'agit typiquement d'une densité (volumique ou surfacique) de matière lorsque le parent est un volume ou une surface d'un bâtiment, et que le coût de l'activité-enfant de construction associée se mesure suivant la masse à produire.
+ 
+ S'il n'est pas spécifié, \texttt{marginal\_amount} vaut par défaut 1. Tel est le cas entre deux activités dont le coût se mesure dans la même unité, et qu'il n'y a pas de perte au passage de l'une à l'autre.
+ 
+ \item \texttt{fixed\_amount} : une quantité fixe, indépendante du volume de matière, associée au passage d'une activité à l'autre (positive pour indiquer une éventuelle perte). En général, cette valeur n'est pas spécifiée et vaut zéro.
+\end{itemize}
+
+\subsection{Example}
+Voici un exemple de fichier XML où l'on modélise un site contenant un seul bâtiment dont la forme est une pyramide tronquée, avec une structure sub de la forme d'un parallélépipède surmmonté d'un prisme. On définit les activités nécessaires au remplissage du volume de remblai (transport puis tassement de terre), à la construction des murs et à leur enduit.
+
+\begin{verbatim}
+<?xml version="1.0" ?>
+<Site name="A first archeological site">
+ <Inputs>
+  <Building name="A first building">
+   <Inputs>
+    <LinearInput marginal_amount="1000 kilogram / meter ** 3" 
+    target_amount="fill_volume">
+     <ProductionActivity marginal_cost="2000.0 work_day / kilogram, 
+     [2000.0 ; 2000.0]" name="Earth packing">
+      <Inputs>
+       <LinearInput>
+        <TransportActivity amount_per_travel="50 kilogram, [50 ; 50]" 
+        distance="100 meter, [100 ; 100]" name="Earth transporting" 
+        speed_empty="5 kph, [5 ; 5]" speed_loaded="2 kph, [2 ; 2]"/>
+       </LinearInput>
+      </Inputs>
+     </ProductionActivity>
+    </LinearInput>
+    <LinearInput marginal_amount="2000.0 kilogram / meter ** 3, [2000.0 ; 
+    2000.0]" target_amount="finish_volume">
+     <ProductionActivity marginal_cost="1000.0 work_day / kilogram, 
+     [1000.0 ; 1000.0]" name="Wall building"/>
+    </LinearInput>
+    <LinearInput marginal_amount="10.0 liter / meter ** 2, [10.0 ; 10.0]" 
+    target_amount="total_finish_area">
+     <ProductionActivity marginal_cost="0.1 work_day / liter, [0.1 ; 
+     0.1]" name="Plaster laying"/>
+    </LinearInput>
+   </Inputs>
+   <Shape>
+    <TruncatedPyramid finish_thickness="0.5 meter, [0.5 ; 0.5]" 
+    bottom_length="30 meter, [30 ; 30]" bottom_width="20 meter, [20 ; 
+    20]" height="10 meter, [10 ; 10]" top_length="10 meter, [10 ; 10]" 
+    top_width="5 meter, [5 ; 5]"/>
+   </Shape>
+   <Substructures>
+    <Cuboid height="6 meter, [5 ; 5]" length="5 meter, [5 ; 5]" width="5 
+    meter, [5 ; 5]"/>
+    <Prism width="5.000 meter, [5.000 ; 5.000]" depth="5.000 meter, [5.000 
+    ; 5.000]" height="5.000 meter, [5.000 ; 5.000]"/>
+   </Substructures>
+  </Building>
+ </Inputs>
+</Site>
+\end{verbatim}
+
+
+\end{document}
