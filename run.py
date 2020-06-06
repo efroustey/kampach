@@ -4,9 +4,12 @@
     :copyright: 2019 by Kampach Authors, see AUTHORS for more details.
     :license: CeCILL, see LICENSE for more details.
 """
-
+import os
+from pathlib import Path
 from kampach.xmlio import load_xml_file
 from kampach.valuable import Valuable
+
+os.chdir(Path(__file__).parent)
 
 root_valuable = None
 while root_valuable is None:
