@@ -20,7 +20,7 @@ class Site(valuable.Valuable):
     def __init__(self, name=''):
         super().__init__(name)
     
-    def compute_own_cost(self, print_depth=0):
+    def compute_own_cost(self, print_depth=0, geom_csv=None, cost_csv=None):
         return 0
 
 
@@ -31,7 +31,7 @@ class SuperBuilding(valuable.Valuable):
     def __init__(self, name=''):
         super().__init__(name)
     
-    def compute_own_cost(self, print_depth=0):
+    def compute_own_cost(self, print_depth=0, geom_csv=None, cost_csv=None):
         return 0
 
 
@@ -103,7 +103,7 @@ class Building(valuable.Valuable):
     def substructures(self, val):
         self._substructures = val
     
-    def compute_own_cost(self, print_depth=0):
+    def compute_own_cost(self, print_depth=0, geom_csv=None, cost_csv=None):
         if self.name:
             blank = " "*2*print_depth
             print()
@@ -114,7 +114,23 @@ class Building(valuable.Valuable):
             print(blank + 'Total finish area: {}'.format(self.total_finish_area))
             print(blank + 'Top finish area: {}'.format(self.top_finish_area))
             print(blank + 'Walls finish area: {}'.format(self.walls_finish_area))
+            if geom_csv:
+                geom_csv.writerow(self.format_geom_data())
         return 0
+
+    def format_geom_data(self):
+        row = [self.name] + self.fill_volume.as_list() + self.finish_volume.as_list()
+        row += self.total_finish_area.as_list() + self.top_finish_area.as_list()
+        row += self.walls_finish_area.as_list()
+        return row
+
+    @staticmethod
+    def make_geom_csv_header():
+        return ['Name', 'Fill volume min', 'Fill volume int', 'Fill volume max',
+                'Finish volume min', 'Finish volume int', 'Finish volume max',
+                'Total finish area min', 'Total finish area int', 'Total finish area max',
+                'Top finish area min', 'Top finish area int', 'Top finish area max',
+                'Walls finish area min', 'Walls finish area int', 'Walls finish area max']
     
     def export_to_xml(self, parent=None):
         elem = super().export_to_xml(parent)

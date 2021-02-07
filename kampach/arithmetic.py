@@ -49,6 +49,9 @@ class BoundedQuantity:
         else:
             self.lower = min(min(bounds), self.mean.magnitude)
             self.upper = max(max(bounds), self.mean.magnitude)
+
+    def as_list(self):
+        return [self.lower, self.mean.magnitude, self.upper]
     
     def __copy__(self):
         return type(self)(copy.copy(self.mean),

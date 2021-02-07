@@ -49,16 +49,16 @@ class Valuable(metaclass=ABCMeta):
     def inputs(self, vals):
         self._inputs = vals
     
-    def compute_total_cost(self, print_depth=0):
+    def compute_total_cost(self, print_depth=0, geom_csv=None, cost_csv=None):
         """Computes the total cost of this valuable, including the cost of its
         inputs.
         """
-        cost = self.compute_own_cost(print_depth)
-        cost += sum(map(lambda i: i.compute_total_cost(print_depth+1), self.inputs))
+        cost = self.compute_own_cost(print_depth, geom_csv, cost_csv)
+        cost += sum(map(lambda i: i.compute_total_cost(print_depth+1, geom_csv, cost_csv), self.inputs))
         return cost
     
     @abstractmethod
-    def compute_own_cost(self, print_depth=0):
+    def compute_own_cost(self, print_depth=0, geom_csv=None, cost_csv=None):
         """Computes the cost of this valuable without its inputs.
         """
         pass
@@ -109,12 +109,17 @@ class QuantitativeValuable(Valuable, metaclass=ABCMeta):
     def amount(self, val):
         self._amount = val
 
+    @staticmethod
+    def make_cost_csv_header():
+        return ['Name', 'Amount min', 'Amount int', 'Amount max',
+                'Cost min', 'Cost int', 'Cost max']
+
 
 class DefaultQuantitativeValuable(QuantitativeValuable):
     """Default implementation of QuantitativeValuable with null proper cost.
     """
     
-    def compute_own_cost(self, print_depth=0):
+    def compute_own_cost(self, print_depth=0, geom_csv=None, cost_csv=None):
         return 0
 
 
@@ -147,7 +152,7 @@ class LinearQuantitativeValuable(QuantitativeValuable):
     def fixed_cost(self, val):
         self._fixed_cost = val
     
-    def compute_own_cost(self, print_depth=0):
+    def compute_own_cost(self, print_depth=0, geom_csv=None, cost_csv=None):
         cost = self.amount*self.marginal_cost + self.fixed_cost
         if self.name:
             blank = " "*2*print_depth
@@ -156,6 +161,8 @@ class LinearQuantitativeValuable(QuantitativeValuable):
             print(blank + '='*len(self.name))
             print(blank + 'Amount: {}'.format(self.amount))
             print(blank + 'Cost: {}'.format(cost))
+            if cost_csv:
+                cost_csv.writerow([self.name] + self.amount.as_list() + cost.as_list())
         return cost
     
     def export_to_xml(self, parent=None):
@@ -219,7 +226,7 @@ class QuantitativeValuableInput(metaclass=ABCMeta):
         self._target_amount = val
     
     @abstractmethod
-    def compute_total_cost(self):
+    def compute_total_cost(self, print_depth=0, geom_csv=None, cost_csv=None):
         """Computes the total cost of the input valuable.
         """
         pass
@@ -264,14 +271,14 @@ class LinearQuantitativeValuableInput(QuantitativeValuableInput):
     def fixed_amount(self, val):
         self._fixed_amount = val
     
-    def compute_total_cost(self, print_depth=0):
+    def compute_total_cost(self, print_depth=0, geom_csv=None, cost_csv=None):
         if isinstance(self.target_amount, str):
             target_amount = getattr(self.target_valuable, self.target_amount)
         else:
             target_amount = self.target_amount
         self.input_valuable.amount = target_amount*self.marginal_amount
         self.input_valuable.amount += self.fixed_amount
-        return self.input_valuable.compute_total_cost(print_depth)
+        return self.input_valuable.compute_total_cost(print_depth, geom_csv, cost_csv)
     
     def export_to_xml(self, parent):
         tag = xmlio.get_tag_from_class(type(self))
