@@ -116,6 +116,8 @@ class Building(valuable.Valuable):
             print(blank + 'Walls finish area: {}'.format(self.walls_finish_area))
             if geom_csv:
                 geom_csv.writerow(self.format_geom_data())
+            if cost_csv:
+                cost_csv.writerow([self.name])
         return 0
 
     def format_geom_data(self):
