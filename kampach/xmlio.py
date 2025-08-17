@@ -9,7 +9,7 @@
 """
 
 # Import all the classes that can be instantiated
-from .geometry import BuildingShape, Cuboid, Prism, TruncatedPyramid, Stairs, Superstructure
+from .geometry import BuildingShape, Cuboid, Prism, Cylinder, TruncatedPyramid, Stairs, Superstructure
 from .site import Building, ProductionActivity, Site, SuperBuilding, TransportActivity
 from .valuable import LinearQuantitativeValuableInput
 
@@ -22,6 +22,7 @@ import xml.dom.minidom
 XML_NAMES = (('BuildingShape', BuildingShape),
              ('Cuboid', Cuboid),
              ('Prism', Prism),
+             ('Cylinder', Cylinder),
              ('TruncatedPyramid', TruncatedPyramid),
              ('Stairs', Stairs),
              ('Superstructure', Superstructure),

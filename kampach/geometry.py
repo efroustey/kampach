@@ -12,6 +12,7 @@ from . import ureg, xmlio
 from .arithmetic import parse_quantity
 from abc import ABCMeta, abstractmethod
 import xml.etree.ElementTree as ET
+import math
 
 null = 0*ureg.meter
 
@@ -235,6 +236,44 @@ class Stairs(TruncatedPyramid):
     def add_data_from_xml_element(self, elem):
         super().add_data_from_xml_element(elem)
         self.depth = parse_quantity(elem.get('depth'))
+
+
+class Cylinder(BuildingShape):
+    """A cylinder.
+    """
+    
+    def __init__(self, finish_thickness=null, diameter=null, height=null):
+        super().__init__(finish_thickness)
+        self.radius = diameter/2.
+        self.height = height
+    
+    def compute_total_volume(self):
+        """Computes the volume of the cylinder.
+        """
+        return self.height * math.pi * self.radius * self.radius
+    
+    def compute_walls_finish_area(self):
+        """Computes the area of the vertical face.
+        """
+        return 2 * math.pi * self.radius * self.height
+    
+    def compute_top_finish_area(self):
+        """Computes the area of the top base.
+        """
+        return math.pi * self.radius * self.radius
+    
+    def export_to_xml(self, parent):
+        elem = super().export_to_xml(parent)
+        elem.set('diameter', str(2 * self.radius))
+        elem.set('height', str(self.height))
+        return elem
+    
+    def add_data_from_xml_element(self, elem):
+        super().add_data_from_xml_element(elem)
+        if 'diameter' in elem.attrib:
+            self.radius = parse_quantity(elem.get('diameter')) / 2
+        if 'height' in elem.attrib:
+            self.height = parse_quantity(elem.get('height'))
 
 
 class Superstructure(BuildingShape):
